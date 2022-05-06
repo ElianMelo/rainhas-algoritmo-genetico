@@ -21,12 +21,27 @@ lineRanges = [
 function createStyleBoard() {
     htmlBoard = $("#board");
 
-    for(b of population[0]) {
-        if(b == 0) {
-            box = $("<div class='box'></div>");
+    rule = false;
+    for(const [index, b] of population[0].entries()) {
+        
+        if([8, 16, 24, 32, 40, 48, 56].includes(index)) {
+            rule = !rule;
+        }
+
+        let black = '';
+
+        if(rule) {
+            black = index % 2 == 0 ? '' : 'black';
         } else {
-            box = $("<div class='box'></div>");
-            img = $("<img src='https://thumbs.dreamstime.com/b/vector-outline-queen-chess-icon-white-background-176235459.jpg'>")
+            black = index % 2 == 0 ? 'black' : '';
+        }
+        
+
+        if(b == 0) {
+            box = $(`<div class='box ${black}'></div>`);
+        } else {
+            box = $(`<div class='box ${black}'></div>`);
+            img = $("<img src='./queen.png'>")
             box.append(img);
         }
         htmlBoard.append(box);
