@@ -24,8 +24,8 @@ function getAllIndexes(arr, val) {
 // Probabilidade de mutação
 // Máximo de Gerações
 
-var populationSize = 100;
-var maxGenerations = 5000;
+var populationSize = 1000;
+var maxGenerations = 100;
 var mutationChance = 0;
 var generationNow = 1;
 var population = [];
@@ -233,7 +233,7 @@ function reproduce() {
         } while (usedsSubjectsWorst.includes(subjectWorst))
 
         usedsSubjectsBetter.push(subjectBetter);
-        usedsSubjectsWorst.push(usedsSubjectsWorst);
+        usedsSubjectsWorst.push(subjectWorst);
 
         let betterSubject = populationScore[subjectBetter].subject;
 
@@ -243,7 +243,7 @@ function reproduce() {
         let firstHalfBetter = betterSubject.slice(0, halfSub)
         let secondHalfBetter = betterSubject.slice(halfSub, endSub)
         
-        let worstSubject = populationScore[subjectBetter].subject;
+        let worstSubject = populationScore[subjectWorst].subject;
 
         halfSub = (worstSubject.length / 2);
         endSub = worstSubject.length;
