@@ -4,6 +4,10 @@ function getRandomInt(min, max) {
     return Math.floor(Math.random() * (max - min + 1)) + min;
 }
 
+function getRandomNumberBetween(min,max){
+    return Math.random()*(max-min+1)+min;
+}
+
 function getAllIndexes(arr, val) {
     var indexes = [], i = -1;
     while ((i = arr.indexOf(val, i + 1)) != -1) {
@@ -20,8 +24,13 @@ function getAllIndexes(arr, val) {
 // Probabilidade de mutação
 // Máximo de Gerações
 
-var populationSize = 50000;
+var populationSize = 100;
+var maxGenerations = 5000;
+var mutationChance = 0;
+var generationNow = 1;
 var population = [];
+var childs = [];
+var populationScore = [];
 
 var lineRanges = [
     [0, 7],
@@ -38,12 +47,12 @@ var directionsSum = [
     { x: -1, y: -1 }, // Diagonal superior esquerda
     { x: 0, y: -1 }, // Cima
     { x: 1, y: -1 }, // Diagonal superior direita
+    { x: 1, y: 0 }, // Direita
     { x: 1, y: 1 }, // Diagonal inferior direita
     { x: 0, y: 1 }, // Baixo
     { x: -1, y: 1 }, // Diagonal inferior esquerda
+    { x: -1, y: 0 }, // Esquerda
 ]
-
-var thebest = [];
 
 function createStyleBoard(populationToRender) {
     htmlBoard = $("#board");
@@ -77,6 +86,22 @@ function createStyleBoard(populationToRender) {
 
 function init() {
     generatePopulation();
+   
+    while(generationNow <= maxGenerations) {
+        analyzeSubject();
+        ordenate();
+        reproduce();
+        mutation();
+        // console.log("Geração: " + generationNow);
+        generationNow++;
+    }
+
+    analyzeSubject();
+    ordenate();
+
+    createStyleBoard(populationScore[populationScore.length-1].subject);
+    console.log(populationScore[populationScore.length-1].score); 
+    console.log(populationScore[0].score); 
 }
 
 function generatePopulation() {
@@ -97,9 +122,6 @@ function generatePopulation() {
         }
         population.push(board);
     }
-
-    // createStyleBoard(population[0]);
-    analyzeSubject();
 }
 
 function analyzeSubject() {
@@ -145,7 +167,6 @@ function analyzeSubject() {
                     let hasQueen = subject[position] == 1;
                     if (hasQueen) {
                         attacks += 1;
-                        box = $(`#${position}`).addClass('red');
                         valid = false;
                         continue;
                     }
@@ -161,37 +182,107 @@ function analyzeSubject() {
         }
 
         if(attacks == 0) {
-            console.log("Encontrou");
+            console.log("Resposta encontrada. Geração: " + generationNow)
         }
 
         media = (totalDist / 56) - 4;
         attacks = (1 / attacks) * 4;
 
-        pontuacao = (media + attacks).toFixed(4);
+        score = (media + attacks).toFixed(4);
 
-        thebest.push(
+        populationScore.push(
             {
                 subject,
-                pontuacao
+                score
             }
         )
 
     }
-    ordenate();
 }
 
 function ordenate() {
-    thebest.sort((a, b) => {
-        if (a.pontuacao > b.pontuacao) {
+    populationScore.sort((a, b) => {
+        if (a.score > b.score) {
             return 1;
         }
-        if (a.pontuacao < b.pontuacao) {
+        if (a.score < b.score) {
             return -1;
         }
     })
-    console.log(thebest[0]);
-    console.log(thebest[thebest.length-1]);
-    createStyleBoard(thebest[thebest.length-1].subject);
+    // console.log(populationScore[0]);
+    // console.log(populationScore[populationScore.length-1]);
+    // createStyleBoard(populationScore[populationScore.length-1].subject);
+}
+
+function reproduce() {
+    childs = [];
+    let half = (populationScore.length / 2) - 1;
+    let end = populationScore.length - 1;
+    let usedsSubjectsBetter = [];
+    let usedsSubjectsWorst = [];
+    while(childs.length < end) {
+        let subjectBetter;
+        let subjectWorst;
+
+        do {
+            subjectBetter = getRandomInt(0, half);
+        } while (usedsSubjectsBetter.includes(subjectBetter))
+        
+        do {
+            subjectWorst = getRandomInt(half + 1, end);
+        } while (usedsSubjectsWorst.includes(subjectWorst))
+
+        usedsSubjectsBetter.push(subjectBetter);
+        usedsSubjectsWorst.push(usedsSubjectsWorst);
+
+        let betterSubject = populationScore[subjectBetter].subject;
+
+        let halfSub = (betterSubject.length / 2);
+        let endSub = betterSubject.length;
+
+        let firstHalfBetter = betterSubject.slice(0, halfSub)
+        let secondHalfBetter = betterSubject.slice(halfSub, endSub)
+        
+        let worstSubject = populationScore[subjectBetter].subject;
+
+        halfSub = (worstSubject.length / 2);
+        endSub = worstSubject.length;
+
+        let firstHalfWorst = worstSubject.slice(0, halfSub)
+        let secondHalfWorst = worstSubject.slice(halfSub, endSub)
+
+        let coin = getRandomInt(0, 1);
+
+        if(coin == 0) {
+            childs.push([].concat(firstHalfBetter, secondHalfWorst));
+            childs.push([].concat(firstHalfWorst, secondHalfBetter));
+        } else {
+            childs.push([].concat(secondHalfWorst, firstHalfBetter));
+            childs.push([].concat(secondHalfBetter, firstHalfWorst));
+        }
+        
+    }
+}
+
+function mutation() {
+
+    childs.forEach((subject) => {
+        let hasMutation = getRandomNumberBetween(0, 1);
+
+        if(hasMutation < mutationChance) {
+            let queens = getAllIndexes(subject, 1);
+            let queenPos = getRandomInt(0, 7);
+    
+            let newQueen = getRandomInt(lineRanges[queenPos][0], lineRanges[queenPos][1]);
+            let oldQueen = queens[queenPos];
+    
+            subject[oldQueen] = 0;
+            subject[newQueen] = 1;
+        }
+    })
+
+    population = childs;
+    populationScore = [];
 }
 
 init();
