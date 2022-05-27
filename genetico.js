@@ -1,26 +1,9 @@
-function getRandomInt(min, max) {
-    min = Math.ceil(min);
-    max = Math.floor(max);
-    return Math.floor(Math.random() * (max - min + 1)) + min;
-}
-
-function getRandomNumberBetween(min,max){
-    return Math.random()*(max-min+1)+min;
-}
-
-function getAllIndexes(arr, val) {
-    var indexes = [], i = -1;
-    while ((i = arr.indexOf(val, i + 1)) != -1) {
-        indexes.push(i);
-    }
-    return indexes;
-}
 
 // Tamanho da população
-// Seleção com elitismo
-// Seleção sem elitismo
+// // Seleção com elitismo
+// // Seleção sem elitismo
 // Probabilidade de cruzamento
-// Número de cortes
+// // Número de cortes
 // Probabilidade de mutação
 // Máximo de Gerações
 
@@ -31,6 +14,7 @@ var generationNow = 1;
 var population = [];
 var childs = [];
 var populationScore = [];
+var previousGeneration = 0;
 
 var lineRanges = [
     [0, 7],
@@ -53,34 +37,88 @@ var directionsSum = [
     { x: -1, y: 1 }, // Diagonal inferior esquerda
     { x: -1, y: 0 }, // Esquerda
 ]
+function calcular() {
+    clear();
+
+    populationSize = $('#populationSize').val();
+    maxGenerations = $('#maxGenerations').val();
+    mutationChance = $('#mutationChance').val();
+    
+    if(!populationSize || !maxGenerations || !mutationChance){
+        alert('Preencha todos os parâmetros!')
+        return;
+    }
+    init();
+}
+
+function clear() {
+    generationNow = 1;
+    population = [];
+    childs = [];
+    populationScore = [];
+    previousGeneration = 0;
+}
+
+function getRandomInt(min, max) {
+    min = Math.ceil(min);
+    max = Math.floor(max);
+    return Math.floor(Math.random() * (max - min + 1)) + min;
+}
+
+function getRandomNumberBetween(min,max){
+    return Math.random()*(max-min+1)+min;
+}
+
+function getAllIndexes(arr, val) {
+    var indexes = [], i = -1;
+    while ((i = arr.indexOf(val, i + 1)) != -1) {
+        indexes.push(i);
+    }
+    return indexes;
+}
 
 function createStyleBoard(populationToRender) {
-    htmlBoard = $("#board");
+    if(previousGeneration != generationNow) {
 
-    rule = false;
-    for (const [index, b] of populationToRender.entries()) {
-
-        if ([8, 16, 24, 32, 40, 48, 56].includes(index)) {
-            rule = !rule;
+        boardContainer = $('#boardContainer');
+        container = $('<div></div>');
+    
+        h1 = $('<h1>Resposta encontrada</h1>');
+        h2 = $(`<h2>Geração: ${generationNow}</h2>`);
+    
+        container.append(h1);
+        container.append(h2);
+    
+        htmlBoard = $('<div class="board"></div>');
+    
+        rule = false;
+        for (const [index, b] of populationToRender.entries()) {
+    
+            if ([8, 16, 24, 32, 40, 48, 56].includes(index)) {
+                rule = !rule;
+            }
+    
+            let black = '';
+    
+            if (rule) {
+                black = index % 2 == 0 ? '' : 'black';
+            } else {
+                black = index % 2 == 0 ? 'black' : '';
+            }
+    
+            if (b == 0) {
+                box = $(`<div class='box ${black}'></div>`);
+            } else {
+                box = $(`<div class='box ${black}' id=${index}></div>`);
+                img = $("<img src='./queen.png'>")
+                box.append(img);
+            }
+            htmlBoard.append(box);
+    
+            boardContainer.append(container);
+            boardContainer.append(htmlBoard);
         }
-
-        let black = '';
-
-        if (rule) {
-            black = index % 2 == 0 ? '' : 'black';
-        } else {
-            black = index % 2 == 0 ? 'black' : '';
-        }
-
-
-        if (b == 0) {
-            box = $(`<div class='box ${black}'></div>`);
-        } else {
-            box = $(`<div class='box ${black}' id=${index}></div>`);
-            img = $("<img src='./queen.png'>")
-            box.append(img);
-        }
-        htmlBoard.append(box);
+        previousGeneration = generationNow; 
     }
 }
 
@@ -99,7 +137,6 @@ function init() {
     analyzeSubject();
     ordenate();
 
-    createStyleBoard(populationScore[populationScore.length-1].subject);
     console.log(populationScore[populationScore.length-1].score); 
     console.log(populationScore[0].score); 
 }
@@ -183,6 +220,7 @@ function analyzeSubject() {
 
         if(attacks == 0) {
             console.log("Resposta encontrada. Geração: " + generationNow)
+            createStyleBoard(subject);
         }
 
         media = (totalDist / 56) - 4;
@@ -285,7 +323,7 @@ function mutation() {
     populationScore = [];
 }
 
-init();
+
 
 
 
