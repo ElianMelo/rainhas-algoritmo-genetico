@@ -10,6 +10,7 @@
 var populationSize = 1000;
 var maxGenerations = 100;
 var mutationChance = 0;
+var reproduceChance = 0;
 var generationNow = 1;
 var population = [];
 var childs = [];
@@ -43,11 +44,19 @@ function calcular() {
     populationSize = $('#populationSize').val();
     maxGenerations = $('#maxGenerations').val();
     mutationChance = $('#mutationChance').val();
+    reproduceChance = $('#reproduceChance').val();
     
-    if(!populationSize || !maxGenerations || !mutationChance){
+    if(!populationSize || !maxGenerations || !mutationChance || !reproduceChance){
         alert('Preencha todos os parâmetros!')
         return;
     }
+
+    mutationChance =  mutationChance / 100;
+    reproduceChance = reproduceChance / 100;
+
+    htmlBoard = $('#boardContainer');
+    htmlBoard.html('');
+
     init();
 }
 
@@ -130,7 +139,6 @@ function init() {
         ordenate();
         reproduce();
         mutation();
-        // console.log("Geração: " + generationNow);
         generationNow++;
     }
 
@@ -291,12 +299,19 @@ function reproduce() {
 
         let coin = getRandomInt(0, 1);
 
-        if(coin == 0) {
-            childs.push([].concat(firstHalfBetter, secondHalfWorst));
-            childs.push([].concat(firstHalfWorst, secondHalfBetter));
+        let hasReproduce = Math.random();
+
+        if(hasReproduce < reproduceChance) {
+            if(coin == 0) {
+                childs.push([].concat(firstHalfBetter, secondHalfWorst));
+                childs.push([].concat(firstHalfWorst, secondHalfBetter));
+            } else {
+                childs.push([].concat(secondHalfWorst, firstHalfBetter));
+                childs.push([].concat(secondHalfBetter, firstHalfWorst));
+            }
         } else {
-            childs.push([].concat(secondHalfWorst, firstHalfBetter));
-            childs.push([].concat(secondHalfBetter, firstHalfWorst));
+            childs.push([].concat(firstHalfBetter, secondHalfBetter));
+            childs.push([].concat(firstHalfWorst, secondHalfWorst));
         }
         
     }
@@ -305,7 +320,7 @@ function reproduce() {
 function mutation() {
 
     childs.forEach((subject) => {
-        let hasMutation = getRandomNumberBetween(0, 1);
+        let hasMutation = Math.random();
 
         if(hasMutation < mutationChance) {
             let queens = getAllIndexes(subject, 1);

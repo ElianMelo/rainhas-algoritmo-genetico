@@ -87,17 +87,22 @@
         <h3>Insira os parametros</h3>
         <form>
             <div class="form-row">
-              <div class="form-group col-md-6">
-                <label for="populationSize">Tamanho da população</label>
-                <input type="number" class="form-control" id="populationSize" placeholder="Tamanho da população">
-              </div>
+              
               <div class="form-group col-md-6">
                 <label for="mutationChance">Probabilidade de mutação (%)</label>
                 <input type="number" class="form-control" id="mutationChance" placeholder="Probabilidade de mutação">
               </div>
               <div class="form-group col-md-6">
+                <label for="reproduceChance">Probabilidade de reprodução (%)</label>
+                <input type="number" class="form-control" id="reproduceChance" placeholder="Probabilidade de reprodução">
+              </div>
+              <div class="form-group col-md-6">
                 <label for="maxGenerations">Máximo de gerações</label>
                 <input type="number" class="form-control" id="maxGenerations" placeholder="Máximo de gerações">
+              </div>
+              <div class="form-group col-md-6">
+                <label for="populationSize">Tamanho da população</label>
+                <input type="number" class="form-control" id="populationSize" placeholder="Tamanho da população">
               </div>
             </div>
             <button type="button" class="btn btn-primary" onclick="calcular()">Calcular</button>
